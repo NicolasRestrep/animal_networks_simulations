@@ -4,8 +4,8 @@ library(igraph)
 library(furrr)
 
 #### Load landscape and net ####
-net <- read_rds("~/Documents/diffusion_animal_networks/Data/networks/dolphin_w1.rds")
-landscape <- read_rds("~/Documents/diffusion_animal_networks/Data/trial_landscape.rds")
+net <- read_rds("~/Documents/animal_networks_simulations/Data/networks/dolphin_w1.rds")
+landscape <- read_rds("~/Documents/animal_networks_simulations/Data/trial_landscape.rds")
 
 #### Functions ####
 sample_robust <-  function(x, size, replace = F, prob = NULL) {
