@@ -1,7 +1,7 @@
 #### Packages ####
 library(tidyverse)
 library(igraph)
-library(doParallel)
+library(furrr)
 
 #### Load landscape and net ####
 net <- read_rds("~/Documents/diffusion_animal_networks/Data/networks/elph_w3_age.rds")
@@ -242,37 +242,21 @@ rugged_crawl_vertical <- function(r_max,
 
 pars <- expand_grid(p_exp = seq(from = 0, to = 0.2, by = 0.05),
                     removal = c(TRUE, FALSE))
-
-set.seed(202312)
 V(net)$age <- (2013 - (2021 - V(net)$age))
+plan(multisession, 
+     workers = 10)
+options <- furrr_options(seed =202312)
 
-registerDoParallel(cores = detectCores() - 1)
-
-set.seed(1, "L'Ecuyer")
-start <- Sys.time()
-df <- lift(foreach)(pars) %dopar%
-  rugged_crawl_vertical(r_max = 500, 
-                        net = net, 
-                        landscape = landscape, 
-                        sims = 500, 
-                        p_exp = p_exp, 
-                        age_thr = 1e3, 
-                        perc_remove = 0.1, 
-                        explore_thr = 30,
-                        removal=removal)
-stopImplicitCluster()
-end <- Sys.time()
-end - start
-
-df <- pmap_df(pars,
+df <- future_pmap_dfr(pars,
               rugged_crawl_vertical,
               r_max = 500,
               net = net,
               landscape = landscape,
-              sims = 500,
+              sims = 100,
               age_thr = 1e3,
               perc_remove = 0.1, 
-              explore_thr = 30)
+              explore_thr = 30, 
+              .options = options)
 
 #### Clean and Save ####
 

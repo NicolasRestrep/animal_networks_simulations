@@ -1,10 +1,11 @@
 #### Packages ####
 library(tidyverse)
 library(igraph)
+library(furrr)
 
 #### Load landscape and net ####
-net <- read_rds("~/diffusion_animal_networks/Data/networks/elph_w1_age.rds")
-landscape <- read_rds("~/diffusion_animal_networks/Data/trial_landscape.rds")
+net <- read_rds("~/Documents/diffusion_animal_networks/Data/networks/elph_w1_age.rds")
+landscape <- read_rds("~/Documents/diffusion_animal_networks/Data/trial_landscape.rds")
 
 #### Functions ####
 sample_robust <-  function(x, size, replace = F, prob = NULL) {
@@ -241,18 +242,20 @@ rugged_crawl_vertical <- function(r_max,
 
 pars <- expand_grid(p_exp = seq(from = 0, to = 0.2, by = 0.05),
                     removal = c(TRUE, FALSE))
-
-set.seed(202312)
 V(net)$age <- (1999 - (2021 - V(net)$age))
-df <- pmap_df(pars,
+plan(multisession, 
+     workers = 10)
+options <- furrr_options(seed =202312)
+df <- future_pmap_dfr(pars,
               rugged_crawl_vertical,
               r_max = 500,
               net = net,
               landscape = landscape,
-              sims = 500,
+              sims = 100,
               age_thr = 1e3,
               perc_remove = 0.1, 
-              explore_thr = 30)
+              explore_thr = 30, 
+              .options = options)
 
 #### Clean and Save ####
 
@@ -261,4 +264,4 @@ df <- df %>%
          remove = as.factor(remove))
 
 saveRDS(df,
-        "~/diffusion_animal_networks/Results/ew1_rand_oo.rds")
+        "~/Documents/diffusion_animal_networks/Results/ew1_rand_oo.rds")
