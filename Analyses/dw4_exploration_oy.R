@@ -260,7 +260,7 @@ df <- future_pmap_dfr(pars,
               sims = 100,
               age_thr = 1e3,
               perc_remove = 0.1, 
-              explore_thr = 30, 
+              explore_thr = 25, 
               .options = options)
 
 #### Clean and Save ####
@@ -270,4 +270,4 @@ df <- df %>%
          remove = as.factor(remove))
 
 saveRDS(df,
-        "~/Documents/diffusion_animal_networks/Results/dw4_oy.rds")
+        "~/Documents/animal_networks_simulations/Results/dw4_oy.rds")
